@@ -90,11 +90,20 @@ const setupNavigation = () => {
     const pages = document.querySelectorAll('.page');
     const pageTitle = document.getElementById('pageTitle');
     
+    if (links.length === 0) {
+        console.error('No sidebar menu links found');
+        return;
+    }
+    
     links.forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
             
             const pageName = link.getAttribute('data-page');
+            if (!pageName) {
+                console.error('No data-page attribute on link');
+                return;
+            }
             
             // Update active link
             links.forEach(l => l.classList.remove('active'));
@@ -105,6 +114,8 @@ const setupNavigation = () => {
             const targetPage = document.getElementById(pageName + 'Page');
             if (targetPage) {
                 targetPage.style.display = 'block';
+            } else {
+                console.error('Page not found:', pageName + 'Page');
             }
             
             // Update page title
