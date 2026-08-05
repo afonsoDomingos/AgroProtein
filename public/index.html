@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gestão Avícola - Dashboard</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Mobile Header -->
+        <div class="mobile-header">
+            <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+            <h1>🐔 Gestão Avícola</h1>
+            <div class="user-info-mobile">
+                <button class="btn-logout" onclick="logout()">Sair</button>
+            </div>
+        </div>
+
+        <!-- Sidebar Overlay -->
+        <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>🐔 Gestão Avícola</h2>
+                <button class="sidebar-close" onclick="toggleSidebar()">&times;</button>
+                <button class="sidebar-toggle" onclick="toggleSidebarCollapse()" title="Recolher/Expandir">◀</button>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="#" class="active" data-page="dashboard"><span>📊</span> <span>Visão Geral</span></a></li>
+                <li><a href="#" data-page="frangos"><span>🐓</span> <span>Frangos de Corte</span></a></li>
+                <li><a href="#" data-page="poedeiras"><span>🥚</span> <span>Poedeiras</span></a></li>
+                <li><a href="#" data-page="clientes"><span>👥</span> <span>Clientes & Vendas</span></a></li>
+                <li><a href="#" data-page="financeiro"><span>💰</span> <span>Gestão Financeira</span></a></li>
+                <li><a href="#" data-page="stock"><span>📦</span> <span>Gestão de Stock</span></a></li>
+                <li><a href="#" data-page="database"><span>🗄️</span> <span>Base de Dados</span></a></li>
+                <li><a href="#" data-page="faturas"><span>📄</span> <span>Faturas & Recibos</span></a></li>
+                <li><a href="#" data-page="config"><span>⚙️</span> <span>Configurações</span></a></li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="header">
+                <h1 id="pageTitle">Visão Geral</h1>
+                <div class="user-info">
+                    <span id="userName">Bem-vindo</span>
+                    <button class="btn-logout" onclick="logout()">Sair</button>
+                </div>
+            </div>
+
+            <!-- Dashboard Page -->
+            <div id="dashboardPage" class="page">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>🔍 Filtros</h3>
+                    </div>
+                    <div class="filters">
+                        <div class="filter-group">
+                            <label>Ano</label>
+                            <select id="filterYear">
+                                <option value="2025">2025</option>
+                                <option value="2024">2024</option>
+                                <option value="2023">2023</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Mês</label>
+                            <select id="filterMonth">
+                                <option value="">Todos</option>
+                                <option value="1">Janeiro</option>
+                                <option value="2">Fevereiro</option>
+                                <option value="3">Março</option>
+                                <option value="4">Abril</option>
+                                <option value="5">Maio</option>
+                                <option value="6">Junho</option>
+                                <option value="7">Julho</option>
+                                <option value="8">Agosto</option>
+                                <option value="9">Setembro</option>
+                                <option value="10">Outubro</option>
+                                <option value="11">Novembro</option>
+                                <option value="12">Dezembro</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Linha</label>
+                            <select id="filterLine">
+                                <option value="">Todas</option>
+                                <option value="frango">Frango de Corte</option>
+                                <option value="ovos">Ovos</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>&nbsp;</label>
+                            <button class="btn btn-primary" onclick="loadDashboardData()">Aplicar Filtros</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="healthStatus" class="health-status healthy">
+                    <div class="health-status-icon">✓</div>
+                    <div class="health-status-text">
+                        <h4 id="healthTitle">Saudável</h4>
+                        <p id="healthDescription">Estado geral combinando margem, mortalidade e caixa</p>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h4>Receita Total</h4>
+                        <div class="value" id="receitaTotal">MT 0,00</div>
+                        <div class="change">▲ 16.2% vs. ano anterior</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Lucro Líquido</h4>
+                        <div class="value" id="lucroLiquido">MT 0,00</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Margem de Lucro</h4>
+                        <div class="value" id="margemLucro">0%</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>ROI Anual</h4>
+                        <div class="value" id="roiAnual">0%</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Aves Alojadas (Ano)</h4>
+                        <div class="value" id="avesAlojadas">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Taxa de Mortalidade Média</h4>
+                        <div class="value" id="taxaMortalidade">0%</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>📈 Desempenho vs. Meta</h3>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Margem de lucro face à meta anual (20%)</h4>
+                        <div class="value" id="desempenhoMeta">0%</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>📊 Receita por Linha de Produto</h3>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <h4>Frango de Corte</h4>
+                            <div class="value" id="receitaFrango">MT 0,00</div>
+                        </div>
+                        <div class="stat-card">
+                            <h4>Ovos</h4>
+                            <div class="value" id="receitaOvos">MT 0,00</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>📈 Receita Mensal</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="receitaMensalChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>🥧 Distribuição de Despesas</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="despesasChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>📊 Comparativo de Produção</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="producaoChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>📈 Tendência de Mortalidade</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="mortalidadeChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>💰 Fluxo de Caixa</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="fluxoCaixaChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Frangos de Corte Page -->
+            <div id="frangosPage" class="page" style="display: none;">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>🐓 Gestão de Frangos de Corte</h3>
+                        <div class="header-actions">
+                            <button class="btn btn-secondary btn-sm" onclick="exportTableToCSV('frangosTable', 'frangos')">📥 Exportar CSV</button>
+                            <button class="btn btn-primary" onclick="openModal('frangoModal')">+ Novo Lote</button>
+                        </div>
+                    </div>
+                    <div class="search-container">
+                        <input type="text" id="frangosSearch" placeholder="🔍 Buscar por lote, raça, status..." oninput="filterTable('frangosTable', this.value)">
+                        <select id="frangosStatusFilter" onchange="filterByStatus('frangosTable', this.value)">
+                            <option value="">Todos os Status</option>
+                            <option value="ativo">Ativo</option>
+                            <option value="concluido">Concluído</option>
+                            <option value="cancelado">Cancelado</option>
+                        </select>
+                    </div>
+                    <div class="table-container">
+                        <table id="frangosTable">
+                            <thead>
+                                <tr>
+                                    <th class="sortable" onclick="sortTable('frangosTable', 0)">Lote</th>
+                                    <th class="sortable" onclick="sortTable('frangosTable', 1)">Quantidade</th>
+                                    <th class="sortable" onclick="sortTable('frangosTable', 2)">Data Entrada</th>
+                                    <th class="sortable" onclick="sortTable('frangosTable', 3)">Raça</th>
+                                    <th class="sortable" onclick="sortTable('frangosTable', 4)">Status</th>
+                                    <th class="sortable" onclick="sortTable('frangosTable', 5)">Taxa Mortalidade</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Poedeiras Page -->
+            <div id="poedeirasPage" class="page" style="display: none;">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>🥚 Gestão de Poedeiras</h3>
+                        <div class="header-actions">
+                            <button class="btn btn-secondary btn-sm" onclick="exportTableToCSV('poedeirasTable', 'poedeiras')">📥 Exportar CSV</button>
+                            <button class="btn btn-primary" onclick="openModal('poedeiraModal')">+ Novo Lote</button>
+                        </div>
+                    </div>
+                    <div class="search-container">
+                        <input type="text" id="poedeirasSearch" placeholder="🔍 Buscar por lote, raça, status..." oninput="filterTable('poedeirasTable', this.value)">
+                        <select id="poedeirasStatusFilter" onchange="filterByStatus('poedeirasTable', this.value)">
+                            <option value="">Todos os Status</option>
+                            <option value="ativo">Ativo</option>
+                            <option value="concluido">Concluído</option>
+                            <option value="cancelado">Cancelado</option>
+                        </select>
+                    </div>
+                    <div class="table-container">
+                        <table id="poedeirasTable">
+                            <thead>
+                                <tr>
+                                    <th class="sortable" onclick="sortTable('poedeirasTable', 0)">Lote</th>
+                                    <th class="sortable" onclick="sortTable('poedeirasTable', 1)">Quantidade</th>
+                                    <th class="sortable" onclick="sortTable('poedeirasTable', 2)">Data Entrada</th>
+                                    <th class="sortable" onclick="sortTable('poedeirasTable', 3)">Raça</th>
+                                    <th class="sortable" onclick="sortTable('poedeirasTable', 4)">Status</th>
+                                    <th class="sortable" onclick="sortTable('poedeirasTable', 5)">Taxa Postura</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Clientes Page -->
+            <div id="clientesPage" class="page" style="display: none;">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>👥 Gestão de Clientes</h3>
+                        <div class="header-actions">
+                            <button class="btn btn-secondary btn-sm" onclick="exportTableToCSV('clientesTable', 'clientes')">📥 Exportar CSV</button>
+                            <button class="btn btn-primary" onclick="openModal('clienteModal')">+ Novo Cliente</button>
+                        </div>
+                    </div>
+                    <div class="search-container">
+                        <input type="text" id="clientesSearch" placeholder="🔍 Buscar por nome, email, telefone..." oninput="filterTable('clientesTable', this.value)">
+                        <select id="clientesStatusFilter" onchange="filterByStatus('clientesTable', this.value)">
+                            <option value="">Todos os Status</option>
+                            <option value="ativo">Ativo</option>
+                            <option value="inativo">Inativo</option>
+                        </select>
+                    </div>
+                    <div class="table-container">
+                        <table id="clientesTable">
+                            <thead>
+                                <tr>
+                                    <th class="sortable" onclick="sortTable('clientesTable', 0)">Nome</th>
+                                    <th class="sortable" onclick="sortTable('clientesTable', 1)">Email</th>
+                                    <th class="sortable" onclick="sortTable('clientesTable', 2)">Telefone</th>
+                                    <th class="sortable" onclick="sortTable('clientesTable', 3)">Tipo</th>
+                                    <th class="sortable" onclick="sortTable('clientesTable', 4)">Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vendas Page -->
+            <div id="vendasPage" class="page" style="display: none;">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>💰 Gestão de Vendas</h3>
+                        <div class="header-actions">
+                            <button class="btn btn-secondary btn-sm" onclick="exportTableToCSV('vendasTable', 'vendas')">📥 Exportar CSV</button>
+                            <button class="btn btn-primary" onclick="openModal('vendaModal')">+ Nova Venda</button>
+                        </div>
+                    </div>
+                    <div class="search-container">
+                        <input type="text" id="vendasSearch" placeholder="🔍 Buscar por cliente, produto, status..." oninput="filterTable('vendasTable', this.value)">
+                        <select id="vendasStatusFilter" onchange="filterByStatus('vendasTable', this.value)">
+                            <option value="">Todos os Status</option>
+                            <option value="pago">Pago</option>
+                            <option value="pendente">Pendente</option>
+                            <option value="cancelado">Cancelado</option>
+                        </select>
+                    </div>
+                    <div class="table-container">
+                        <table id="vendasTable">
+                            <thead>
+                                <tr>
+                                    <th class="sortable" onclick="sortTable('vendasTable', 0)">Cliente</th>
+                                    <th class="sortable" onclick="sortTable('vendasTable', 1)">Produto</th>
+                                    <th class="sortable" onclick="sortTable('vendasTable', 2)">Quantidade</th>
+                                    <th class="sortable" onclick="sortTable('vendasTable', 3)">Valor Total</th>
+                                    <th class="sortable" onclick="sortTable('vendasTable', 4)">Data</th>
+                                    <th class="sortable" onclick="sortTable('vendasTable', 5)">Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Financeiro Page -->
+            <div id="financeiroPage" class="page" style="display: none;">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>💰 Gestão Financeira - Despesas</h3>
+                        <div class="header-actions">
+                            <button class="btn btn-secondary btn-sm" onclick="exportTableToCSV('despesasTable', 'despesas')">📥 Exportar CSV</button>
+                            <button class="btn btn-primary" onclick="openModal('despesaModal')">+ Nova Despesa</button>
+                        </div>
+                    </div>
+                    <div class="search-container">
+                        <input type="text" id="despesasSearch" placeholder="🔍 Buscar por descrição, categoria, status..." oninput="filterTable('despesasTable', this.value)">
+                        <select id="despesasStatusFilter" onchange="filterByStatus('despesasTable', this.value)">
+                            <option value="">Todos os Status</option>
+                            <option value="pago">Pago</option>
+                            <option value="pendente">Pendente</option>
+                        </select>
+                    </div>
+                    <div class="table-container">
+                        <table id="despesasTable">
+                            <thead>
+                                <tr>
+                                    <th class="sortable" onclick="sortTable('despesasTable', 0)">Descrição</th>
+                                    <th class="sortable" onclick="sortTable('despesasTable', 1)">Categoria</th>
+                                    <th class="sortable" onclick="sortTable('despesasTable', 2)">Valor</th>
+                                    <th class="sortable" onclick="sortTable('despesasTable', 3)">Data</th>
+                                    <th class="sortable" onclick="sortTable('despesasTable', 4)">Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Faturas Page -->
+            <div id="faturasPage" class="page" style="display: none;">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>📄 Faturas & Recibos</h3>
+                        <div class="header-actions">
+                            <button class="btn btn-secondary btn-sm" onclick="exportTableToCSV('faturasTable', 'faturas')">📥 Exportar CSV</button>
+                            <button class="btn btn-primary" onclick="openModal('faturaModal')">+ Nova Fatura</button>
+                        </div>
+                    </div>
+                    <div class="search-container">
+                        <input type="text" id="faturasSearch" placeholder="🔍 Buscar por número, cliente, status..." oninput="filterTable('faturasTable', this.value)">
+                        <select id="faturasStatusFilter" onchange="filterByStatus('faturasTable', this.value)">
+                            <option value="">Todos os Status</option>
+                            <option value="pago">Pago</option>
+                            <option value="pendente">Pendente</option>
+                            <option value="atrasado">Atrasado</option>
+                        </select>
+                    </div>
+                    <div class="table-container">
+                        <table id="faturasTable">
+                            <thead>
+                                <tr>
+                                    <th class="sortable" onclick="sortTable('faturasTable', 0)">Número</th>
+                                    <th class="sortable" onclick="sortTable('faturasTable', 1)">Cliente</th>
+                                    <th class="sortable" onclick="sortTable('faturasTable', 2)">Valor</th>
+                                    <th class="sortable" onclick="sortTable('faturasTable', 3)">Data Emissão</th>
+                                    <th class="sortable" onclick="sortTable('faturasTable', 4)">Data Vencimento</th>
+                                    <th class="sortable" onclick="sortTable('faturasTable', 5)">Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Database Page -->
+            <div id="databasePage" class="page" style="display: none;">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>🗄️ Base de Dados</h3>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <h4>Total de Frangos</h4>
+                            <div class="value" id="totalFrangos">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <h4>Total de Poedeiras</h4>
+                            <div class="value" id="totalPoedeiras">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <h4>Total de Clientes</h4>
+                            <div class="value" id="totalClientes">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <h4>Total de Vendas</h4>
+                            <div class="value" id="totalVendas">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <h4>Total de Despesas</h4>
+                            <div class="value" id="totalDespesas">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <h4>Total de Faturas</h4>
+                            <div class="value" id="totalFaturas">0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stock Page -->
+            <div id="stockPage" class="page" style="display: none;">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>📦 Gestão de Stock</h3>
+                        <div class="header-actions">
+                            <button class="btn btn-secondary btn-sm" onclick="loadStockStatus()">🔄 Atualizar</button>
+                            <button class="btn btn-primary" onclick="openMovimentacaoModal()">+ Nova Movimentação</button>
+                        </div>
+                    </div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <h4>Total Frangos</h4>
+                            <div class="value" id="totalFrangosStock">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <h4>Total Poedeiras</h4>
+                            <div class="value" id="totalPoedeirasStock">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <h4>Alertas Stock Baixo</h4>
+                            <div class="value" id="alertasStockBaixo">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>🐓 Stock de Frangos</h3>
+                    </div>
+                    <div class="table-container">
+                        <table id="frangosStockTable">
+                            <thead>
+                                <tr>
+                                    <th>Lote</th>
+                                    <th>Quantidade</th>
+                                    <th>Stock Atual</th>
+                                    <th>Stock Mínimo</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>🥚 Stock de Poedeiras</h3>
+                    </div>
+                    <div class="table-container">
+                        <table id="poedeirasStockTable">
+                            <thead>
+                                <tr>
+                                    <th>Lote</th>
+                                    <th>Quantidade</th>
+                                    <th>Stock Atual</th>
+                                    <th>Stock Mínimo</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>📋 Histórico de Movimentações</h3>
+                    </div>
+                    <div class="table-container">
+                        <table id="movimentacoesTable">
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Tipo</th>
+                                    <th>Lote</th>
+                                    <th>Quantidade</th>
+                                    <th>Stock Anterior</th>
+                                    <th>Stock Novo</th>
+                                    <th>Motivo</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Config Page -->
+            <div id="configPage" class="page" style="display: none;">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>⚙️ Configurações do Sistema</h3>
+                    </div>
+                    <form id="configForm">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Nome da Empresa</label>
+                                <input type="text" name="empresaNome" id="empresaNome" value="Gestão Avícola">
+                            </div>
+                            <div class="form-group">
+                                <label>Moeda</label>
+                                <select name="moeda" id="moeda">
+                                    <option value="MT">MT - Metical</option>
+                                    <option value="R$">R$ - Real</option>
+                                    <option value="USD">$ - Dólar</option>
+                                    <option value="EUR">€ - Euro</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Telefone de Contato</label>
+                                <input type="text" name="telefoneContato" id="telefoneContato" placeholder="+258 84 123 4567">
+                            </div>
+                            <div class="form-group">
+                                <label>Email de Contato</label>
+                                <input type="email" name="emailContato" id="emailContato" placeholder="contato@empresa.com">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Endereço</label>
+                            <input type="text" name="endereco" id="endereco" placeholder="Endereço completo">
+                        </div>
+                        <div class="form-group">
+                            <label>NIF (Número de Identificação Fiscal)</label>
+                            <input type="text" name="nif" id="nif" placeholder="000000000">
+                        </div>
+                        <div class="form-group">
+                            <label>Observações</label>
+                            <textarea name="observacoes" id="observacoes" placeholder="Informações adicionais"></textarea>
+                        </div>
+                        <div class="btn-group">
+                            <button type="submit" class="btn btn-primary">Salvar Configurações</button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="card" style="margin-top: 20px;">
+                    <div class="card-header">
+                        <h3>👤 Foto de Perfil</h3>
+                    </div>
+                    <div class="form-group">
+                        <div class="profile-photo-container">
+                            <div class="profile-photo-preview" id="profilePhotoPreview">
+                                <span id="profilePhotoPlaceholder">📷</span>
+                                <img id="profilePhotoImg" style="display: none;">
+                            </div>
+                            <input type="file" id="profilePhotoInput" accept="image/*" onchange="previewProfilePhoto(event)" style="display: none;">
+                            <button class="btn btn-secondary" onclick="document.getElementById('profilePhotoInput').click()">Escolher Foto</button>
+                            <button class="btn btn-danger" onclick="removeProfilePhoto()" style="margin-left: 10px;">Remover</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card" style="margin-top: 20px;">
+                    <div class="card-header">
+                        <h3>👤 Informações do Usuário</h3>
+                    </div>
+                    <div class="form-group">
+                        <p id="userInfo"></p>
+                    </div>
+                    <div class="form-group">
+                        <button class="btn btn-secondary" onclick="seedAdmin()">Criar Usuário Admin</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="frangoModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Novo Lote de Frangos</h3>
+                <button class="modal-close" onclick="closeModal('frangoModal')">&times;</button>
+            </div>
+            <form id="frangoForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Lote</label>
+                        <input type="text" name="lote" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Quantidade</label>
+                        <input type="number" name="quantidade" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Data Entrada</label>
+                        <input type="date" name="dataEntrada" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Raça</label>
+                        <select name="raca">
+                            <option value="Cobb">Cobb</option>
+                            <option value="Ross">Ross</option>
+                            <option value="Hubbard">Hubbard</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Peso Médio (kg)</label>
+                        <input type="number" step="0.01" name="pesoMedio">
+                    </div>
+                    <div class="form-group">
+                        <label>Taxa Mortalidade (%)</label>
+                        <input type="number" step="0.1" name="taxaMortalidade" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Custo Alimentação</label>
+                        <input type="number" step="0.01" name="custoAlimentacao" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Custo Medicamento</label>
+                        <input type="number" step="0.01" name="custoMedicamento" value="0">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Observações</label>
+                    <textarea name="observacoes"></textarea>
+                </div>
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-primary btn-full">Salvar</button>
+                    <button type="button" class="btn btn-secondary btn-full" onclick="closeModal('frangoModal')">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="poedeiraModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Novo Lote de Poedeiras</h3>
+                <button class="modal-close" onclick="closeModal('poedeiraModal')">&times;</button>
+            </div>
+            <form id="poedeiraForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Lote</label>
+                        <input type="text" name="lote" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Quantidade</label>
+                        <input type="number" name="quantidade" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Data Entrada</label>
+                        <input type="date" name="dataEntrada" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Raça</label>
+                        <select name="raca">
+                            <option value="Hy-Line">Hy-Line</option>
+                            <option value="Isa Brown">Isa Brown</option>
+                            <option value="Lohmann">Lohmann</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Produção Diária</label>
+                        <input type="number" name="producaoDiaria" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Taxa Postura (%)</label>
+                        <input type="number" step="0.1" name="taxaPostura" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Peso Médio Ovo (g)</label>
+                        <input type="number" step="0.1" name="pesoMedioOvo" value="60">
+                    </div>
+                    <div class="form-group">
+                        <label>Taxa Mortalidade (%)</label>
+                        <input type="number" step="0.1" name="taxaMortalidade" value="0">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Observações</label>
+                    <textarea name="observacoes"></textarea>
+                </div>
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-primary btn-full">Salvar</button>
+                    <button type="button" class="btn btn-secondary btn-full" onclick="closeModal('poedeiraModal')">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="clienteModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Novo Cliente</h3>
+                <button class="modal-close" onclick="closeModal('clienteModal')">&times;</button>
+            </div>
+            <form id="clienteForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Nome</label>
+                        <input type="text" name="nome" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Telefone</label>
+                        <input type="text" name="telefone" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo Cliente</label>
+                        <select name="tipoCliente">
+                            <option value="varejo">Varejo</option>
+                            <option value="atacado">Atacado</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Desconto (%)</label>
+                        <input type="number" step="0.1" name="desconto" value="0">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Endereço</label>
+                    <input type="text" name="endereco">
+                </div>
+                <div class="form-group">
+                    <label>Observações</label>
+                    <textarea name="observacoes"></textarea>
+                </div>
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-primary btn-full">Salvar</button>
+                    <button type="button" class="btn btn-secondary btn-full" onclick="closeModal('clienteModal')">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="vendaModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Nova Venda</h3>
+                <button class="modal-close" onclick="closeModal('vendaModal')">&times;</button>
+            </div>
+            <form id="vendaForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Cliente</label>
+                        <select name="cliente" id="vendaCliente" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo Produto</label>
+                        <select name="tipoProduto" required>
+                            <option value="frango">Frango</option>
+                            <option value="ovos">Ovos</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Quantidade</label>
+                        <input type="number" name="quantidade" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Preço Unitário</label>
+                        <input type="number" step="0.01" name="precoUnitario" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Valor Total</label>
+                        <input type="number" step="0.01" name="valorTotal" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Forma Pagamento</label>
+                        <select name="formaPagamento">
+                            <option value="dinheiro">Dinheiro</option>
+                            <option value="cartao">Cartão</option>
+                            <option value="pix">PIX</option>
+                            <option value="boleto">Boleto</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Observações</label>
+                    <textarea name="observacoes"></textarea>
+                </div>
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-primary btn-full">Salvar</button>
+                    <button type="button" class="btn btn-secondary btn-full" onclick="closeModal('vendaModal')">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="despesaModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Nova Despesa</h3>
+                <button class="modal-close" onclick="closeModal('despesaModal')">&times;</button>
+            </div>
+            <form id="despesaForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Descrição</label>
+                        <input type="text" name="descricao" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Categoria</label>
+                        <select name="categoria" required>
+                            <option value="alimentacao">Alimentação</option>
+                            <option value="medicamentos">Medicamentos</option>
+                            <option value="manutencao">Manutenção</option>
+                            <option value="salarios">Salários</option>
+                            <option value="energia">Energia</option>
+                            <option value="agua">Água</option>
+                            <option value="outros">Outros</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Valor</label>
+                        <input type="number" step="0.01" name="valor" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Forma Pagamento</label>
+                        <select name="formaPagamento">
+                            <option value="dinheiro">Dinheiro</option>
+                            <option value="cartao">Cartão</option>
+                            <option value="pix">PIX</option>
+                            <option value="boleto">Boleto</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Fornecedor</label>
+                        <input type="text" name="fornecedor">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Observações</label>
+                    <textarea name="observacoes"></textarea>
+                </div>
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-primary btn-full">Salvar</button>
+                    <button type="button" class="btn btn-secondary btn-full" onclick="closeModal('despesaModal')">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="faturaModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Nova Fatura</h3>
+                <button class="modal-close" onclick="closeModal('faturaModal')">&times;</button>
+            </div>
+            <form id="faturaForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Número</label>
+                        <input type="text" name="numero" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Cliente</label>
+                        <select name="cliente" id="faturaCliente" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Valor</label>
+                        <input type="number" step="0.01" name="valor" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Data Vencimento</label>
+                        <input type="date" name="dataVencimento" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Observações</label>
+                    <textarea name="observacoes"></textarea>
+                </div>
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-primary btn-full">Salvar</button>
+                    <button type="button" class="btn btn-secondary btn-full" onclick="closeModal('faturaModal')">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Movimentação Stock Modal -->
+    <div id="movimentacaoModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Nova Movimentação de Stock</h3>
+                <button class="modal-close" onclick="closeModal('movimentacaoModal')">&times;</button>
+            </div>
+            <form id="movimentacaoForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Tipo de Movimentação</label>
+                        <select name="tipo" id="movTipo" required>
+                            <option value="entrada">Entrada</option>
+                            <option value="saida">Saída</option>
+                            <option value="ajuste">Ajuste</option>
+                            <option value="mortalidade">Mortalidade</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo de Produto</label>
+                        <select name="produtoTipo" id="movProdutoTipo" required onchange="loadProdutosForStock()">
+                            <option value="frango">Frango de Corte</option>
+                            <option value="poedeira">Poedeira</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Lote</label>
+                        <select name="produtoId" id="movLote" required>
+                            <option value="">Selecione o tipo primeiro</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Quantidade</label>
+                        <input type="number" name="quantidade" id="movQuantidade" required min="1">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Motivo</label>
+                    <input type="text" name="motivo" id="movMotivo" required placeholder="Ex: Venda, Reposição, Ajuste de inventário">
+                </div>
+                <div class="form-group">
+                    <label>Observações</label>
+                    <textarea name="observacoes" id="movObservacoes" placeholder="Informações adicionais"></textarea>
+                </div>
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-primary btn-full">Registrar Movimentação</button>
+                    <button type="button" class="btn btn-secondary btn-full" onclick="closeModal('movimentacaoModal')">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
