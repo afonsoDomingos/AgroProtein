@@ -1,6 +1,9 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const connectDB = require('../config/db');
+const seedAdmin = require('../config/seed');
+const User = require('../models/User');
 
 // Import routes
 const authRoutes = require('../routes/auth');
@@ -18,6 +21,24 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Auto-create admin on first request
+let adminSeeded = false;
+const ensureAdmin = async (req, res, next) => {
+  if (!adminSeeded) {
+    try {
+      await connectDB();
+      await seedAdmin();
+      adminSeeded = true;
+    } catch (error) {
+      console.error('Error seeding admin:', error);
+    }
+  }
+  next();
+};
+
+// Apply admin seeding middleware to all routes
+app.use(ensureAdmin);
 
 // Routes
 app.use('/api/auth', authRoutes);
