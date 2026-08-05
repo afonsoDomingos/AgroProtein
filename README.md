@@ -254,6 +254,50 @@ Para uso em produção:
 4. Adicione validações adicionais
 5. Configure backup de dados
 
+## 🌐 Deploy na Vercel
+
+Este projeto está configurado para deploy na Vercel com serverless functions.
+
+### Pré-requisitos para Vercel
+- Conta no Vercel
+- MongoDB Atlas (recomendado para produção)
+- Variáveis de ambiente configuradas
+
+### Passos para Deploy
+
+1. **Configure o MongoDB Atlas**
+   - Crie uma conta no MongoDB Atlas
+   - Crie um cluster
+   - Adicione IP whitelist (0.0.0.0/0 para Vercel)
+   - Copie a connection string
+
+2. **Configure Variáveis de Ambiente no Vercel**
+   - `MONGODB_URI`: Sua connection string do MongoDB Atlas
+   - `JWT_SECRET`: Uma chave secreta forte para JWT
+
+3. **Deploy Automático**
+   - Conecte seu repositório GitHub ao Vercel
+   - O Vercel detectará automaticamente a configuração
+   - Deploy será automático ao fazer push
+
+### Estrutura para Vercel
+- `api/index.js`: Entry point para serverless functions
+- `vercel.json`: Configuração de build e rotas
+- `config/db.js`: Conexão MongoDB com cache para serverless
+
+### Solução de Problemas no Vercel
+
+**Se o servidor crashar:**
+- Verifique se `MONGODB_URI` está configurada corretamente
+- Confirme que o MongoDB Atlas permite conexões do IP da Vercel
+- Verifique os logs no Vercel Dashboard
+- Certifique-se que `JWT_SECRET` está definido
+
+**Timeout de conexão:**
+- Aumente `serverSelectionTimeoutMS` no `config/db.js`
+- Verifique a latência do MongoDB Atlas
+- Considere usar um cluster mais próximo
+
 ## 🐛 Troubleshooting
 
 ### Erro de conexão MongoDB
