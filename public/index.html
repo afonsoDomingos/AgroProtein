@@ -35,6 +35,7 @@
                 <li><a href="#" data-page="clientes"><span>👥</span> <span>Clientes & Vendas</span></a></li>
                 <li><a href="#" data-page="financeiro"><span>💰</span> <span>Gestão Financeira</span></a></li>
                 <li><a href="#" data-page="stock"><span>📦</span> <span>Gestão de Stock</span></a></li>
+                <li><a href="#" data-page="noticias"><span>📰</span> <span>Notícias</span></a></li>
                 <li><a href="#" data-page="database"><span>🗄️</span> <span>Base de Dados</span></a></li>
                 <li><a href="#" data-page="faturas"><span>📄</span> <span>Faturas & Recibos</span></a></li>
                 <li><a href="#" data-page="config"><span>⚙️</span> <span>Configurações</span></a></li>
@@ -558,6 +559,34 @@
                 </div>
             </div>
 
+            <!-- Notícias Page -->
+            <div id="noticiasPage" class="page" style="display: none;">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>📰 Notícias</h3>
+                        <div class="header-actions">
+                            <button class="btn btn-secondary btn-sm" onclick="loadNoticias()">🔄 Atualizar</button>
+                            <button class="btn btn-primary" onclick="openModal('noticiaModal')">+ Nova Notícia</button>
+                        </div>
+                    </div>
+                    <div class="search-container">
+                        <input type="text" id="noticiasSearch" placeholder="🔍 Buscar por título, categoria..." oninput="filterNoticias(this.value)">
+                        <select id="noticiasCategoriaFilter" onchange="filterNoticiasByCategoria(this.value)">
+                            <option value="">Todas as Categorias</option>
+                            <option value="geral">Geral</option>
+                            <option value="frangos">Frangos</option>
+                            <option value="poedeiras">Poedeiras</option>
+                            <option value="financeiro">Financeiro</option>
+                            <option value="mercado">Mercado</option>
+                            <option value="tecnologia">Tecnologia</option>
+                        </select>
+                    </div>
+                    <div class="noticias-grid" id="noticiasGrid">
+                        <!-- Notícias serão carregadas aqui -->
+                    </div>
+                </div>
+            </div>
+
             <!-- Config Page -->
             <div id="configPage" class="page" style="display: none;">
                 <div class="card">
@@ -992,6 +1021,55 @@
                 <div class="btn-group">
                     <button type="submit" class="btn btn-primary btn-full">Registrar Movimentação</button>
                     <button type="button" class="btn btn-secondary btn-full" onclick="closeModal('movimentacaoModal')">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notícia Modal -->
+    <div id="noticiaModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Nova Notícia</h3>
+                <button class="modal-close" onclick="closeModal('noticiaModal')">&times;</button>
+            </div>
+            <form id="noticiaForm">
+                <div class="form-group">
+                    <label>Título</label>
+                    <input type="text" name="titulo" required placeholder="Título da notícia">
+                </div>
+                <div class="form-group">
+                    <label>Categoria</label>
+                    <select name="categoria" required>
+                        <option value="geral">Geral</option>
+                        <option value="frangos">Frangos</option>
+                        <option value="poedeiras">Poedeiras</option>
+                        <option value="financeiro">Financeiro</option>
+                        <option value="mercado">Mercado</option>
+                        <option value="tecnologia">Tecnologia</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Conteúdo</label>
+                    <textarea name="conteudo" rows="6" required placeholder="Conteúdo da notícia"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>URL da Imagem (opcional)</label>
+                    <input type="text" name="imagem" placeholder="https://exemplo.com/imagem.jpg">
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" name="destaque"> Marcar como destaque
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" name="publicado" checked> Publicar imediatamente
+                    </label>
+                </div>
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-primary btn-full">Salvar Notícia</button>
+                    <button type="button" class="btn btn-secondary btn-full" onclick="closeModal('noticiaModal')">Cancelar</button>
                 </div>
             </form>
         </div>

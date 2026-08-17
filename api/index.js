@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const connectDB = require('../config/db');
-const seedAdmin = require('../config/seed');
+const { seedAdmin, seedNoticias } = require('../config/seed');
 const User = require('../models/User');
 
 // Import routes
@@ -15,6 +15,7 @@ const despesasRoutes = require('../routes/despesas');
 const faturasRoutes = require('../routes/faturas');
 const dashboardRoutes = require('../routes/dashboard');
 const stockRoutes = require('../routes/stock');
+const noticiasRoutes = require('../routes/noticias');
 
 const app = express();
 
@@ -22,16 +23,17 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Auto-create admin on first request
+// Auto-create admin and sample news on first request
 let adminSeeded = false;
 const ensureAdmin = async (req, res, next) => {
   if (!adminSeeded) {
     try {
       await connectDB();
       await seedAdmin();
+      await seedNoticias();
       adminSeeded = true;
     } catch (error) {
-      console.error('Error seeding admin:', error);
+      console.error('Error seeding data:', error);
     }
   }
   next();
@@ -50,6 +52,7 @@ app.use('/api/despesas', despesasRoutes);
 app.use('/api/faturas', faturasRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/stock', stockRoutes);
+app.use('/api/noticias', noticiasRoutes);
 
 // Serve static files
 app.use(express.static(path.join(__dirname, '../public')));

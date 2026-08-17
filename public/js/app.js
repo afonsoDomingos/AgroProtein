@@ -126,6 +126,7 @@ const setupNavigation = () => {
                 'clientes': 'Clientes',
                 'financeiro': 'Gestão Financeira',
                 'stock': 'Gestão de Stock',
+                'noticias': 'Notícias',
                 'database': 'Base de Dados',
                 'faturas': 'Faturas & Recibos',
                 'config': 'Configurações'
@@ -146,6 +147,8 @@ const setupNavigation = () => {
                 loadDespesas();
             } else if (pageName === 'stock') {
                 loadStockStatus();
+            } else if (pageName === 'noticias') {
+                loadNoticias();
             } else if (pageName === 'database') {
                 loadDatabaseOverview();
             } else if (pageName === 'faturas') {
@@ -2014,6 +2017,167 @@ const logout = () => {
     localStorage.removeItem('user');
     window.location.href = '/login';
 };
+
+// Notícias functions
+let allNoticias = [];
+
+const loadNoticias = async () => {
+    try {
+        const response = await fetch('/api/noticias', {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+        const noticias = await response.json();
+        allNoticias = noticias;
+        renderNoticias(noticias);
+    } catch (error) {
+        console.error('Erro ao carregar notícias:', error);
+        showToast('Erro ao carregar notícias', 'error');
+    }
+};
+
+const renderNoticias = (noticias) => {
+    const grid = document.getElementById('noticiasGrid');
+    if (!grid) return;
+    
+    if (noticias.length === 0) {
+        grid.innerHTML = '<p class="no-data">Nenhuma notícia encontrada</p>';
+        return;
+    }
+    
+    grid.innerHTML = noticias.map(noticia => `
+        <div class="noticia-card ${noticia.destaque ? 'destaque' : ''}">
+            ${noticia.imagem ? `<img src="${noticia.imagem}" alt="${noticia.titulo}" class="noticia-image">` : ''}
+            <div class="noticia-content">
+                <span class="noticia-categoria">${noticia.categoria}</span>
+                <h4 class="noticia-titulo">${noticia.titulo}</h4>
+                <p class="noticia-texto">${noticia.conteudo.substring(0, 150)}...</p>
+                <div class="noticia-meta">
+                    <span class="noticia-data">${new Date(noticia.dataPublicacao).toLocaleDateString('pt-BR')}</span>
+                    <span class="noticia-status ${noticia.publicado ? 'publicado' : 'rascunho'}">
+                        ${noticia.publicado ? 'Publicado' : 'Rascunho'}
+                    </span>
+                </div>
+                <div class="noticia-actions">
+                    <button class="btn btn-sm btn-secondary" onclick="editNoticia('${noticia._id}')">Editar</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteNoticia('${noticia._id}')">Excluir</button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+};
+
+const filterNoticias = (searchTerm) => {
+    const filtered = allNoticias.filter(noticia =>
+        noticia.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        noticia.conteudo.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    renderNoticias(filtered);
+};
+
+const filterNoticiasByCategoria = (categoria) => {
+    if (!categoria) {
+        renderNoticias(allNoticias);
+        return;
+    }
+    const filtered = allNoticias.filter(noticia => noticia.categoria === categoria);
+    renderNoticias(filtered);
+};
+
+const editNoticia = async (id) => {
+    try {
+        const response = await fetch(`/api/noticias/${id}`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+        const noticia = await response.json();
+        
+        // Preencher o formulário
+        const form = document.getElementById('noticiaForm');
+        form.querySelector('[name="titulo"]').value = noticia.titulo;
+        form.querySelector('[name="categoria"]').value = noticia.categoria;
+        form.querySelector('[name="conteudo"]').value = noticia.conteudo;
+        form.querySelector('[name="imagem"]').value = noticia.imagem || '';
+        form.querySelector('[name="destaque"]').checked = noticia.destaque;
+        form.querySelector('[name="publicado"]').checked = noticia.publicado;
+        
+        // Adicionar ID ao formulário para edição
+        form.dataset.editId = id;
+        
+        openModal('noticiaModal');
+    } catch (error) {
+        console.error('Erro ao carregar notícia:', error);
+        showToast('Erro ao carregar notícia', 'error');
+    }
+};
+
+const deleteNoticia = async (id) => {
+    if (!confirm('Tem certeza que deseja excluir esta notícia?')) return;
+    
+    try {
+        const response = await fetch(`/api/noticias/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+        
+        if (response.ok) {
+            showToast('Notícia excluída com sucesso', 'success');
+            loadNoticias();
+        } else {
+            showToast('Erro ao excluir notícia', 'error');
+        }
+    } catch (error) {
+        console.error('Erro ao excluir notícia:', error);
+        showToast('Erro ao excluir notícia', 'error');
+    }
+};
+
+// Setup notícia form
+document.addEventListener('DOMContentLoaded', () => {
+    const noticiaForm = document.getElementById('noticiaForm');
+    if (noticiaForm) {
+        noticiaForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(noticiaForm);
+            const data = Object.fromEntries(formData.entries());
+            data.destaque = noticiaForm.querySelector('[name="destaque"]').checked;
+            data.publicado = noticiaForm.querySelector('[name="publicado"]').checked;
+            
+            const editId = noticiaForm.dataset.editId;
+            const url = editId ? `/api/noticias/${editId}` : '/api/noticias';
+            const method = editId ? 'PUT' : 'POST';
+            
+            try {
+                const response = await fetch(url, {
+                    method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    showToast(editId ? 'Notícia atualizada com sucesso' : 'Notícia criada com sucesso', 'success');
+                    closeModal('noticiaModal');
+                    noticiaForm.reset();
+                    delete noticiaForm.dataset.editId;
+                    loadNoticias();
+                } else {
+                    showToast('Erro ao salvar notícia', 'error');
+                }
+            } catch (error) {
+                console.error('Erro ao salvar notícia:', error);
+                showToast('Erro ao salvar notícia', 'error');
+            }
+        });
+    }
+});
 
 // Initialize
 window.addEventListener('load', () => {
